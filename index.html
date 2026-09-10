@@ -3,318 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>被子植物解剖圖集 · Angiosperm atlas</title>
+  <title>被子植物 3D 解剖</title>
   <style>
-    :root { --bg:#0b0d11; --panel:#10151c; --ink:#e8eef4; --muted:#8b9bb0; --line:#243044; --acc:#7ec8a3; }
+    :root { --bg:#090c11; --panel:#10151c; --ink:#e8eef4; --muted:#8b9bb0; --line:#243044; --acc:#7ec8a3; }
     * { box-sizing:border-box; margin:0; padding:0; }
-    html,body { height:100%; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif; }
-    #app { display:grid; grid-template-columns:250px 1fr 360px; height:100%; }
-    aside, .info { background:var(--panel); overflow:auto; padding:16px 14px 28px; }
+    html,body { height:100%; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif; overflow:hidden; }
+    #app { display:grid; grid-template-columns:240px 1fr 340px; height:100%; }
+    aside, .info { background:var(--panel); overflow:auto; padding:14px 12px 24px; }
     aside { border-right:1px solid var(--line); }
     .info { border-left:1px solid var(--line); }
-    h1 { font-size:15px; font-weight:650; line-height:1.35; }
-    .sub { font-size:11px; color:var(--muted); margin:6px 0 14px; line-height:1.45; }
-    .group { margin-bottom:16px; }
-    .group h2 { font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--acc); margin-bottom:8px; }
+    h1 { font-size:15px; font-weight:650; }
+    .sub { font-size:11px; color:var(--muted); margin:6px 0 12px; line-height:1.45; }
+    .group { margin-bottom:14px; }
+    .group h2 { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); margin-bottom:6px; }
     button.nav { display:block; width:100%; text-align:left; background:transparent; color:var(--ink);
-      border:1px solid transparent; border-radius:8px; padding:8px 10px; margin-bottom:3px; cursor:pointer; font-size:13px; }
+      border:1px solid transparent; border-radius:8px; padding:7px 9px; margin-bottom:2px; cursor:pointer; font-size:13px; }
     button.nav:hover { background:#18202c; }
     button.nav.active { background:#1b2a28; border-color:#2f5a4a; color:#c8f0dc; }
-    #stage { position:relative; background:#07090d; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    #plateWrap { position:relative; max-width:100%; max-height:100%; }
-    #plate { display:block; max-width:100%; max-height:100vh; object-fit:contain; user-select:none; }
-    .hot {
-      position:absolute; border:1.5px solid rgba(180,230,210,.0); border-radius:10px; cursor:pointer;
-      background:rgba(80,180,140,0);
+    #stage { position:relative; background:#07090d; }
+    #c { display:block; width:100%; height:100%; }
+    .hud { position:absolute; left:12px; bottom:12px; display:flex; gap:6px; flex-wrap:wrap; }
+    .hud button, .hint {
+      background:rgba(12,18,26,.82); color:#d7e4ef; border:1px solid #2c3d52; border-radius:8px;
+      padding:6px 10px; font-size:12px; cursor:pointer;
     }
-    .hot:hover, .hot.on { border-color:rgba(160,230,200,.85); background:rgba(90,200,150,.12); }
-    .pin {
-      position:absolute; transform:translate(-50%,-100%);
-      background:rgba(10,16,22,.82); color:#eaf6f0; font-size:11px; padding:3px 7px;
-      border-radius:6px; border:1px solid #3a5a50; pointer-events:none; white-space:nowrap;
-    }
-    .info h2 { font-family:Georgia,"Noto Serif TC",serif; font-size:20px; margin:6px 0 10px; }
+    .hint { cursor:default; color:var(--muted); max-width:280px; line-height:1.35; }
+    .info h2 { font-family:Georgia,"Noto Serif TC",serif; font-size:20px; margin:6px 0 8px; }
     .badge { display:inline-block; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
       background:#1e3340; color:#9fd4c0; padding:3px 7px; border-radius:99px; }
-    .info p { font-size:14px; line-height:1.6; color:#d5deea; margin-bottom:10px; font-family:Georgia,"Noto Serif TC",serif; }
-    .info ul { margin:0 0 12px 18px; font-size:13.5px; line-height:1.55; color:#c5d0de; }
-    .cell-card { background:#151c26; border:1px solid #2a3a4c; border-radius:8px; padding:10px; margin-bottom:8px; }
-    .cell-card h3 { font-size:13px; margin-bottom:4px; }
-    .cell-card p { font-size:12.5px; margin:0; color:#b7c4d4; font-family:inherit; }
-    .cite { font-size:11px; color:#7d8ea3; line-height:1.45; border-top:1px solid var(--line); padding-top:10px; margin-top:14px; }
-    .note { font-size:12px; color:var(--muted); line-height:1.45; }
-    @media (max-width:1100px){ #app{grid-template-columns:210px 1fr;} .info{display:none;} }
+    .info p, .info li { font-size:13.5px; line-height:1.55; color:#d5deea; }
+    .info ul { margin:0 0 10px 18px; }
+    .cite { font-size:11px; color:#7d8ea3; border-top:1px solid var(--line); padding-top:10px; margin-top:12px; }
+    .note { font-size:12px; color:var(--muted); line-height:1.4; }
+    @media (max-width:1100px){ #app{grid-template-columns:200px 1fr;} .info{display:none;} }
   </style>
 </head>
 <body>
 <div id="app">
   <aside>
-    <h1>被子植物解剖圖集</h1>
-    <p class="sub">教科書級切片圖，唔再用積木 3D。撳圖上嘅結構睇說明。</p>
+    <h1>被子植物 3D 解剖</h1>
+    <p class="sub">拖移旋轉 · 滾輪放大 · 撳結構入下一層。近鏡會見到組織同細胞。</p>
     <div class="group">
-      <h2>葉同維管束</h2>
-      <button class="nav active" data-id="leaf">葉肉立體切片</button>
-      <button class="nav" data-id="vein">葉脈細胞：木質部／韌皮部</button>
-      <button class="nav" data-id="transport">運輸：源 → 庫</button>
-      <button class="nav" data-id="stoma">氣孔同保衛細胞</button>
+      <h2>尺度</h2>
+      <button class="nav active" data-id="tree">整棵樹</button>
+      <button class="nav" data-id="leaf">葉肉立體塊</button>
+      <button class="nav" data-id="vein">葉脈細胞</button>
+      <button class="nav" data-id="stoma">氣孔</button>
+      <button class="nav" data-id="transport">運輸管</button>
     </div>
     <div class="group">
-      <h2>莖、形成層、木材</h2>
-      <button class="nav" data-id="stemPrimary">初生莖橫切</button>
-      <button class="nav" data-id="stem">木本莖染色橫切</button>
-      <button class="nav" data-id="trunk">樹幹立體剖開</button>
-      <button class="nav" data-id="cambium">維管形成層</button>
-      <button class="nav" data-id="xylemLS">木質部縱切細胞</button>
+      <h2>莖同木材</h2>
+      <button class="nav" data-id="stemPrimary">初生莖切片</button>
+      <button class="nav" data-id="stem">木本莖切片</button>
+      <button class="nav" data-id="trunk">樹幹剖開</button>
+      <button class="nav" data-id="cambium">形成層</button>
+      <button class="nav" data-id="xylemLS">木材細胞</button>
     </div>
     <div class="group">
-      <h2>根同分生組織</h2>
-      <button class="nav" data-id="root">幼根橫切</button>
-      <button class="nav" data-id="roottip">根尖縱切</button>
-      <button class="nav" data-id="sam">莖端分生組織</button>
+      <h2>根、分生、花</h2>
+      <button class="nav" data-id="root">幼根切片</button>
+      <button class="nav" data-id="roottip">根尖</button>
+      <button class="nav" data-id="sam">莖端</button>
+      <button class="nav" data-id="flower">花</button>
     </div>
-    <div class="group">
-      <h2>花</h2>
-      <button class="nav" data-id="flower">雙子葉花剖開</button>
-    </div>
-    <p class="note">圖係教學重建，細胞形狀同位置跟 Esau／Evert／教科書通例，唔係某一棵真樹嘅照片。</p>
+    <p class="note">切片圖貼喺切開面；細胞用 3D 幾何。根切片已改四原型、外始式教學排列。</p>
   </aside>
   <div id="stage">
-    <div id="plateWrap">
-      <img id="plate" alt="anatomy plate" />
+    <canvas id="c"></canvas>
+    <div class="hud">
+      <span class="hint">拖移轉 · 滾輪 zoom · 撳色塊</span>
+      <button id="btnReset">重設鏡頭</button>
+      <button id="btnCut">剖開／合上</button>
     </div>
   </div>
   <section class="info">
-    <span class="badge" id="badge"></span>
-    <h2 id="title"></h2>
+    <span class="badge" id="badge">器官</span>
+    <h2 id="title">整棵樹</h2>
     <div id="body"></div>
   </section>
 </div>
-<script>
-const PLATES = {
-  leaf: {
-    src: "plates/leaf.jpg",
-    badge: "葉 · 約 200–400 µm 厚",
-    title: "背腹葉立體切片",
-    html: `<p>呢塊係葉嘅組織立方：上表皮 → 柵欄組織 → 葉脈 → 海綿組織 → 下表皮同氣孔。</p>
-    <ul>
-      <li><b>上表皮</b>：鋪路石狀活細胞，外面有角質層。</li>
-      <li><b>柵欄葉肉</b>：長柱狀含葉綠體細胞。切開嘅兩個見到大液泡、周邊葉綠體、細胞核。</li>
-      <li><b>海綿葉肉</b>：不規則細胞 + 大氣室，方便 CO₂ 擴散。</li>
-      <li><b>葉脈</b>：維管束鞘包住。近上側係木質部（褐／橙色導管），近下側係韌皮部（淡色篩管）。</li>
-      <li><b>保衛細胞</b>：下表皮開口，控制蒸騰同氣體交換。</li>
-    </ul>
-    <p class="cite">Esau / Evert；NCERT XI 背腹葉；Britannica leaves。</p>`,
-    spots: [
-      { l:18,t:6,w:64,h:16, name:"上表皮 + 角質層", note:"鋪路石狀表皮細胞。角質層係蠟質胞外層，減少無控制失水。" },
-      { l:22,t:18,w:56,h:28, name:"柵欄葉肉", note:"柱狀綠色組織，主要光合層。切開細胞見到大液泡、周邊葉綠體同細胞核。" },
-      { l:48,t:42,w:28,h:22, name:"葉脈（木質部在上）", note:"近軸面木質部運水入葉；遠軸面韌皮部運走蔗糖。" },
-      { l:18,t:48,w:30,h:24, name:"海綿葉肉 + 氣室", note:"不規則含葉綠體細胞。氣室連接氣孔下腔。" },
-      { l:22,t:74,w:22,h:16, name:"氣孔／保衛細胞", note:"下表皮一對腎形保衛細胞，膨壓控制開合。" }
-    ]
-  },
-  vein: {
-    src: "plates/vein.jpg",
-    badge: "葉脈 · 十幾至幾十 µm",
-    title: "葉脈入面：活韌皮部、死木質部",
-    html: `<div class="cell-card"><h3>篩管分子</h3><p>活、但成熟時冇核。端壁係有孔嘅篩板。負責運光合產物。</p></div>
-    <div class="cell-card"><h3>伴胞</h3><p>有核嘅姊妹細胞。濃細胞質。用胞間連絲同篩管相通，負責裝載蔗糖。</p></div>
-    <div class="cell-card"><h3>導管分子</h3><p>成熟時死亡。外有初生壁、內有厚木質化次生壁、中間空腔。端壁有穿孔板，側面有紋孔。</p></div>
-    <div class="cell-card"><h3>管胞</h3><p>死、末端封閉，靠紋孔過水。兼有支持作用。</p></div>
-    <div class="cell-card"><h3>厚壁纖維</h3><p>死、次生壁極厚、空腔極細。機械保護維管束。</p></div>
-    <p class="cite">Esau；Evert 木質部／韌皮部圖；Taiz 伴胞裝載。</p>`,
-    spots: [
-      { l:6,t:18,w:28,h:70, name:"韌皮部（篩管 + 伴胞）", note:"青色活細胞。灰色圓盤係篩板，紫色係伴胞細胞核。" },
-      { l:36,t:22,w:28,h:62, name:"導管分子（切開）", note:"洋紅。可見次生壁、空腔、穿孔，側面圓孔係紋孔。" },
-      { l:62,t:28,w:10,h:55, name:"管胞", note:"較幼、無開口腔穿孔，靠紋孔連通。" },
-      { l:72,t:30,w:12,h:52, name:"厚壁纖維", note:"深紅、空腔極細，支持組織。" },
-      { l:55,t:2,w:40,h:22, name:"柵欄葉肉", note:"葉脈旁邊嘅光合細胞，充滿葉綠體。" }
-    ]
-  },
-  transport: {
-    src: "plates/transport.jpg",
-    badge: "功能 · 器官到細胞",
-    title: "木質部向上，韌皮部由源到庫",
-    html: `<p><b>木質部導管</b>係死細胞砌成嘅空管。水同礦質離子跟蒸騰拉力<b>向上</b>走（內聚–張力）。</p>
-    <p><b>韌皮部篩管</b>係活嘅。蔗糖靠 Münch 集流：葉（源）膨壓高，把汁液推向庫（芽、果、根）。整棵植物嚟講，韌皮部可以上亦可以下。</p>
-    <p class="cite">Taiz et al.；Münch 1930；Britannica vascular tissue。</p>`,
-    spots: [
-      { l:22,t:28,w:22,h:58, name:"木質部 · 水向上", note:"死導管。水珠同礦質顆粒向上。動力主要係葉面蒸騰。" },
-      { l:46,t:28,w:22,h:58, name:"韌皮部 · 蔗糖到庫", note:"活篩管，有篩板。黃粒係蔗糖。由葉源流向根或其他庫。" },
-      { l:28,t:4,w:36,h:22, name:"葉（源）", note:"光合製造蔗糖，裝入韌皮部；同時蒸騰拉水上升。" }
-    ]
-  },
-  stoma: {
-    src: "plates/stoma.jpg",
-    badge: "細胞 · 約 20–50 µm",
-    title: "一對保衛細胞同氣孔",
-    html: `<p>雙子葉典型腎形保衛細胞。內側壁較厚，膨壓升高時向外彎，氣孔打開。保衛細胞有葉綠體同細胞核。氣孔下面係氣室，通向海綿組織。</p>
-    <p class="cite">Willmer &amp; Fricker；Taiz stomatal mechanics。</p>`,
-    spots: [
-      { l:28,t:22,w:44,h:55, name:"保衛細胞 + 氣孔", note:"膨壓控制開合。可見葉綠體同核。中間孔隙通往葉內氣室。" },
-      { l:4,t:4,w:28,h:40, name:"表皮細胞", note:"普通鋪路石表皮，通常冇葉綠體。" }
-    ]
-  },
-  stem: {
-    src: "plates/stem.jpg",
-    badge: "莖 · 毫米至厘米",
-    title: "木本雙子葉莖橫切（染色切片觀）",
-    html: `<p>由內到外：髓 → 初生木質部 → 次生木質部年輪（心材／邊材，導管呈孔，射線呈放射條）→ 形成層細線 → 次生韌皮部 → 木栓樹皮。</p>
-    <p>真切片望落係圓形組織圖，唔係遊戲樹幹。</p>
-    <p class="cite">Esau；Panshin &amp; de Zeeuw；IAWA hardwood list。</p>`,
-    spots: [
-      { l:38,t:38,w:24,h:24, name:"髓", note:"中央初生薄壁組織。" },
-      { l:28,t:22,w:44,h:56, name:"次生木質部（木材）", note:"放射狀木射線 + 導管孔。內側較老，外側較新。" },
-      { l:18,t:16,w:64,h:68, name:"形成層至樹皮", note:"綠／粉環大約係形成層同次生韌皮部，最外深色係木栓。" }
-    ]
-  },
-  root: {
-    src: "plates/root.jpg",
-    badge: "根 · 毫米",
-    title: "幼根橫切",
-    html: `<p>根毛 → 皮層 → 內皮層（凱氏帶）→ 中柱鞘 → <b>外始式</b>木質部星，韌皮部位於臂與臂之間。</p>
-    <p>教學切片常畫四原型；真實種可以係三至六原型。圖中星形木質部係典型根式排列。</p>
-    <p class="cite">Esau；Enstone, Peterson &amp; Ma 2003 Casparian strip。</p>`,
-    spots: [
-      { l:18,t:18,w:64,h:64, name:"皮層 + 根毛", note:"外側薄壁組織同根毛，吸收面積大。" },
-      { l:34,t:34,w:32,h:32, name:"中柱：木質部星", note:"紅染厚壁導管排成星。原生木質部在外（外始式）。" }
-    ]
-  },
-  roottip: {
-    src: "plates/roottip.jpg",
-    badge: "根尖 · 毫米",
-    title: "根冠、分生區、伸長區、成熟區",
-    html: `<p>根冠保護亞頂端嘅根端分生組織。伸長區細胞變長，把根尖推進土壤。根毛同凱氏帶出現喺成熟區。</p>
-    <p class="cite">Esau；Raven Biology of Plants。</p>`,
-    spots: [
-      { l:28,t:78,w:44,h:18, name:"根冠", note:"保護分生組織，有平衡石細胞，分泌黏液。" },
-      { l:30,t:62,w:40,h:16, name:"分生區", note:"細胞細密、核大，持續分裂。" },
-      { l:22,t:20,w:56,h:36, name:"伸長／成熟", note:"細胞拉長，側面開始出根毛。" }
-    ]
-  },
-  trunk: {
-    src: "plates/trunk.jpg",
-    badge: "次生生長 · 厘米",
-    title: "木本莖立體剖開",
-    html: `<p>由外到內：木栓樹皮 → 木栓形成層／皮層殘餘 → 次生韌皮部 → 維管形成層 → 邊材（活運輸木材）→ 心材（死、儲存填充物）。放射條係木射線。</p>
-    <p>剖開面見到導管孔同年輪。邊材運水，心材主要係機械支持同防腐。</p>
-    <p class="cite">Esau；Panshin &amp; de Zeeuw；IAWA。</p>`,
-    spots: [
-      { l:8,t:18,w:12,h:64, name:"樹皮（木栓）", note:"死細胞保護層，由木栓形成層產生。" },
-      { l:20,t:28,w:10,h:44, name:"次生韌皮部", note:"粉紅環。篩管運蔗糖，每年大部分被擠壓淘汰。" },
-      { l:30,t:22,w:40,h:56, name:"次生木質部", note:"邊材淺色運水；中心較深係心材。" }
-    ]
-  },
-  cambium: {
-    src: "plates/cambium.jpg",
-    badge: "形成層 · 幾十 µm",
-    title: "雙面維管形成層",
-    html: `<p>中間淡色矩形細胞係形成層原始細胞：長嘅紡錘原始細胞造軸向系統，短嘅射線原始細胞造射線。</p>
-    <p>向內（左，粉紅）加一次生木質部；向外（右，青）加一次生韌皮部。所以叫<b>雙面形成層</b>。</p>
-    <p class="cite">Esau；Evert vascular cambium。</p>`,
-    spots: [
-      { l:4,t:8,w:28,h:82, name:"次生木質部", note:"已木質化導管同纖維，空腔大。" },
-      { l:36,t:12,w:22,h:76, name:"形成層帶", note:"薄壁、矩形、保持分裂能力。" },
-      { l:60,t:10,w:36,h:80, name:"次生韌皮部", note:"篩管同伴胞。篩板呈多孔圓盤。" },
-      { l:20,t:40,w:60,h:10, name:"木射線", note:"水平薄壁細胞帶，連通內外，儲存同橫向運輸。" }
-    ]
-  },
-  xylemLS: {
-    src: "plates/xylemLS.jpg",
-    badge: "木材細胞 · 縱切",
-    title: "闊葉樹木材：導管、管胞、纖維、射線",
-    html: `<div class="cell-card"><h3>導管分子</h3><p>死、空腔大。側壁有紋孔，端壁有穿孔板，水可以直通過去。</p></div>
-    <div class="cell-card"><h3>管胞</h3><p>死、末端封閉。靠具緣紋孔過水，兼有支持。</p></div>
-    <div class="cell-card"><h3>木纖維</h3><p>壁極厚、空腔細，主要機械支持。</p></div>
-    <div class="cell-card"><h3>木射線薄壁組織</h3><p>活細胞，有核。橫向運輸同儲存澱粉、油。</p></div>
-    <p class="cite">IAWA hardwood features；Esau xylem。</p>`,
-    spots: [
-      { l:4,t:8,w:52,h:55, name:"導管分子", note:"切開見到空腔、側壁紋孔、內部穿孔板骨架。" },
-      { l:58,t:4,w:28,h:70, name:"管胞／纖維", note:"幼長細胞，具緣紋孔排成串。" },
-      { l:8,t:68,w:70,h:26, name:"木射線", note:"活薄壁細胞橫排，紫色係細胞核。" }
-    ]
-  },
-  sam: {
-    src: "plates/sam.jpg",
-    badge: "分生組織 · 百 µm",
-    title: "莖端分生組織",
-    html: `<p>頂端圓拱係 tunica–corpus：表層細胞分裂以垂周為主，維持表面。兩側係葉原基。下面成串細細胞係原形成層，將嚟變成維管束。</p>
-    <p class="cite">Esau；Steeves &amp; Sussex。</p>`,
-    spots: [
-      { l:28,t:8,w:44,h:36, name:"莖端分生組織", note:"細胞細密、核大、液泡小。持續分裂。" },
-      { l:8,t:18,w:20,h:50, name:"葉原基", note:"即將展開成葉嘅側生突起。" },
-      { l:36,t:48,w:28,h:40, name:"原形成層", note:"將嚟分化成初生木質部同初生韌皮部。" }
-    ]
-  },
-  stemPrimary: {
-    src: "plates/stemPrimary.jpg",
-    badge: "初生莖 · 毫米",
-    title: "草本雙子葉莖橫切",
-    html: `<p>維管束排成一圈，中間大髓。每個管束都係<b>外韌內木</b>：韌皮部向外，木質部向內，而且係<b>內始式</b>（原生木質部靠近髓）。</p>
-    <p>同根相反：根係外始式木質部星。</p>
-    <p class="cite">Esau；NCERT anatomy of flowering plants。</p>`,
-    spots: [
-      { l:42,t:38,w:16,h:24, name:"髓", note:"中央薄壁組織。" },
-      { l:18,t:12,w:64,h:20, name:"維管束環", note:"紅＝木質部向內；綠＝韌皮部向外。" },
-      { l:8,t:8,w:84,h:84, name:"表皮＋皮層", note:"最外一圈表皮，內面係皮層薄壁／厚角組織。" }
-    ]
-  },
-  flower: {
-    src: "plates/flower.jpg",
-    badge: "生殖器官",
-    title: "雙子葉花剖開",
-    html: `<p>由外到內四輪：花萼、花冠、雄蕊群、雌蕊群。子房切開見到胚珠。花藥切開見到花粉。呢個就係被子植物定義：胚珠包喺子房入面。</p>
-    <p class="cite">Raven Biology of Plants；Esau flower。</p>`,
-    spots: [
-      { l:18,t:8,w:64,h:28, name:"花瓣", note:"花冠，吸引傳粉者。" },
-      { l:18,t:38,w:22,h:22, name:"雄蕊／花藥", note:"花藥內有花粉囊。" },
-      { l:40,t:28,w:20,h:14, name:"柱頭＋花柱", note:"接受花粉，花粉管向下長。" },
-      { l:36,t:46,w:28,h:28, name:"子房＋胚珠", note:"胚珠之後發育成種子，子房壁成果皮。" }
-    ]
-  }
-};
-
-const wrap = document.getElementById("plateWrap");
-const img = document.getElementById("plate");
-let current = "leaf";
-
-function setPlate(id) {
-  current = id;
-  const p = PLATES[id];
-  document.querySelectorAll("button.nav").forEach(b => b.classList.toggle("active", b.dataset.id === id));
-  document.getElementById("badge").textContent = p.badge;
-  document.getElementById("title").textContent = p.title;
-  document.getElementById("body").innerHTML = p.html;
-  img.src = p.src;
-  wrap.querySelectorAll(".hot,.pin").forEach(n => n.remove());
-}
-
-img.addEventListener("load", () => {
-  const p = PLATES[current];
-  (p.spots || []).forEach(s => {
-    const h = document.createElement("button");
-    h.className = "hot";
-    h.style.left = s.l + "%"; h.style.top = s.t + "%";
-    h.style.width = s.w + "%"; h.style.height = s.h + "%";
-    h.title = s.name;
-    h.onclick = () => {
-      wrap.querySelectorAll(".hot").forEach(x => x.classList.remove("on"));
-      h.classList.add("on");
-      document.getElementById("badge").textContent = "選中";
-      document.getElementById("title").textContent = s.name;
-      document.getElementById("body").innerHTML = `<p>${s.note}</p>` + p.html;
-    };
-    wrap.appendChild(h);
-    const pin = document.createElement("div");
-    pin.className = "pin";
-    pin.textContent = s.name;
-    pin.style.left = (s.l + s.w/2) + "%";
-    pin.style.top = s.t + "%";
-    wrap.appendChild(pin);
-  });
-});
-
-document.querySelectorAll("button.nav").forEach(b => b.addEventListener("click", () => setPlate(b.dataset.id)));
-setPlate("leaf");
-</script>
+<script src="vendor/three.min.js"></script>
+<script src="viewer.js"></script>
 </body>
 </html>
