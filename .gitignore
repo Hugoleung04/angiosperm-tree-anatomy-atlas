@@ -1,0 +1,5 @@
+.DS_Store
+previews/
+*.pyc
+.vscode/
+.idea/
