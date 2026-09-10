@@ -2,87 +2,95 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>被子植物 3D 解剖</title>
   <style>
-    :root { --bg:#090c11; --panel:#10151c; --ink:#e8eef4; --muted:#8b9bb0; --line:#243044; --acc:#7ec8a3; }
+    :root { --ink:#eaf2f8; --muted:#9aabbd; --acc:#86d4b0; --panel:rgba(10,14,20,.92); }
     * { box-sizing:border-box; margin:0; padding:0; }
-    html,body { height:100%; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif; overflow:hidden; }
-    #app { display:grid; grid-template-columns:240px 1fr 340px; height:100%; }
-    aside, .info { background:var(--panel); overflow:auto; padding:14px 12px 24px; }
-    aside { border-right:1px solid var(--line); }
-    .info { border-left:1px solid var(--line); }
-    h1 { font-size:15px; font-weight:650; }
-    .sub { font-size:11px; color:var(--muted); margin:6px 0 12px; line-height:1.45; }
-    .group { margin-bottom:14px; }
-    .group h2 { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); margin-bottom:6px; }
-    button.nav { display:block; width:100%; text-align:left; background:transparent; color:var(--ink);
-      border:1px solid transparent; border-radius:8px; padding:7px 9px; margin-bottom:2px; cursor:pointer; font-size:13px; }
-    button.nav:hover { background:#18202c; }
-    button.nav.active { background:#1b2a28; border-color:#2f5a4a; color:#c8f0dc; }
-    #stage { position:relative; background:#07090d; }
-    #c { display:block; width:100%; height:100%; }
-    .hud { position:absolute; left:12px; bottom:12px; display:flex; gap:6px; flex-wrap:wrap; }
-    .hud button, .hint {
-      background:rgba(12,18,26,.82); color:#d7e4ef; border:1px solid #2c3d52; border-radius:8px;
-      padding:6px 10px; font-size:12px; cursor:pointer;
+    html,body { height:100%; background:#05070a; color:var(--ink); font-family:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif; overflow:hidden; }
+    #stage { position:fixed; inset:0; }
+    #c { width:100%; height:100%; display:block; }
+    #menuBtn, #infoBtn {
+      position:fixed; z-index:5; top:max(12px, env(safe-area-inset-top));
+      width:42px; height:42px; border:1px solid #2c3d50; border-radius:10px;
+      background:var(--panel); color:var(--ink); font-size:18px; cursor:pointer;
     }
-    .hint { cursor:default; color:var(--muted); max-width:280px; line-height:1.35; }
-    .info h2 { font-family:Georgia,"Noto Serif TC",serif; font-size:20px; margin:6px 0 8px; }
-    .badge { display:inline-block; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
-      background:#1e3340; color:#9fd4c0; padding:3px 7px; border-radius:99px; }
-    .info p, .info li { font-size:13.5px; line-height:1.55; color:#d5deea; }
-    .info ul { margin:0 0 10px 18px; }
-    .cite { font-size:11px; color:#7d8ea3; border-top:1px solid var(--line); padding-top:10px; margin-top:12px; }
-    .note { font-size:12px; color:var(--muted); line-height:1.4; }
-    @media (max-width:1100px){ #app{grid-template-columns:200px 1fr;} .info{display:none;} }
+    #menuBtn { left:max(12px, env(safe-area-inset-left)); }
+    #infoBtn { right:max(12px, env(safe-area-inset-right)); }
+    #drawer, #card {
+      position:fixed; z-index:6; background:var(--panel); border:1px solid #243044;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    }
+    #drawer {
+      top:0; left:0; bottom:0; width:min(280px, 86vw); padding:58px 14px 24px;
+      transform:translateX(-105%); transition:transform .22s ease; overflow:auto;
+    }
+    #drawer.open { transform:none; }
+    #drawer h1 { font-size:15px; margin-bottom:6px; }
+    #drawer .sub { font-size:11px; color:var(--muted); line-height:1.4; margin-bottom:14px; }
+    .g { margin-bottom:12px; }
+    .g h2 { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); margin-bottom:6px; }
+    button.nav {
+      display:block; width:100%; text-align:left; background:transparent; color:var(--ink);
+      border:1px solid transparent; border-radius:8px; padding:8px 10px; margin-bottom:2px; font-size:14px; cursor:pointer;
+    }
+    button.nav.active { background:#1b2a28; border-color:#2f5a4a; }
+    #card {
+      right:max(12px, env(safe-area-inset-right));
+      bottom:max(56px, env(safe-area-inset-bottom));
+      width:min(340px, calc(100vw - 24px));
+      max-height:38vh; overflow:auto; padding:12px 14px; border-radius:12px;
+    }
+    #card.hidden { display:none; }
+    #card .badge { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#9fd4c0; }
+    #card h2 { font-family:Georgia,"Noto Serif TC",serif; font-size:18px; margin:4px 0 6px; }
+    #card p, #card li { font-size:13px; line-height:1.5; color:#d5deea; }
+    #card ul { margin:0 0 8px 18px; }
+    #hint {
+      position:fixed; z-index:4; left:50%; transform:translateX(-50%);
+      bottom:max(12px, env(safe-area-inset-bottom));
+      background:var(--panel); border:1px solid #2c3d50; border-radius:999px;
+      padding:6px 12px; font-size:12px; color:var(--muted); pointer-events:none; white-space:nowrap;
+    }
+    #scrim { display:none; position:fixed; inset:0; z-index:5; background:rgba(0,0,0,.35); }
+    #scrim.on { display:block; }
   </style>
 </head>
 <body>
-<div id="app">
-  <aside>
+  <div id="stage"><canvas id="c"></canvas></div>
+  <button id="menuBtn" aria-label="選單">☰</button>
+  <button id="infoBtn" aria-label="說明">i</button>
+  <div id="scrim"></div>
+  <aside id="drawer">
     <h1>被子植物 3D 解剖</h1>
-    <p class="sub">拖移旋轉 · 滾輪放大 · 撳結構入下一層。近鏡會見到組織同細胞。</p>
-    <div class="group">
-      <h2>尺度</h2>
-      <button class="nav active" data-id="tree">整棵樹</button>
-      <button class="nav" data-id="leaf">葉肉立體塊</button>
+    <p class="sub">拖移旋轉 · 雙指或滾輪放大。畫面只顯示插畫模型，無幾何積木。</p>
+    <div class="g"><h2>葉</h2>
+      <button class="nav active" data-id="leaf">葉肉立體塊</button>
       <button class="nav" data-id="vein">葉脈細胞</button>
       <button class="nav" data-id="stoma">氣孔</button>
-      <button class="nav" data-id="transport">運輸管</button>
+      <button class="nav" data-id="transport">運輸</button>
     </div>
-    <div class="group">
-      <h2>莖同木材</h2>
+    <div class="g"><h2>莖／木材</h2>
       <button class="nav" data-id="stemPrimary">初生莖切片</button>
       <button class="nav" data-id="stem">木本莖切片</button>
       <button class="nav" data-id="trunk">樹幹剖開</button>
       <button class="nav" data-id="cambium">形成層</button>
       <button class="nav" data-id="xylemLS">木材細胞</button>
     </div>
-    <div class="group">
-      <h2>根、分生、花</h2>
+    <div class="g"><h2>根／花</h2>
       <button class="nav" data-id="root">幼根切片</button>
       <button class="nav" data-id="roottip">根尖</button>
       <button class="nav" data-id="sam">莖端</button>
       <button class="nav" data-id="flower">花</button>
     </div>
-    <p class="note">切片圖貼喺切開面；細胞用 3D 幾何。根切片已改四原型、外始式教學排列。</p>
   </aside>
-  <div id="stage">
-    <canvas id="c"></canvas>
-    <div class="hud">
-      <span class="hint">拖移轉 · 滾輪 zoom · 撳色塊</span>
-      <button id="btnReset">重設鏡頭</button>
-      <button id="btnCut">剖開／合上</button>
-    </div>
-  </div>
-  <section class="info">
-    <span class="badge" id="badge">器官</span>
-    <h2 id="title">整棵樹</h2>
+  <section id="card">
+    <div class="badge" id="badge"></div>
+    <h2 id="title"></h2>
     <div id="body"></div>
   </section>
-</div>
-<script src="vendor/three.min.js"></script>
-<script src="viewer.js"></script>
+  <div id="hint">拖移旋轉 · 滾輪放大</div>
+  <script src="vendor/three.min.js"></script>
+  <script src="viewer.js"></script>
 </body>
 </html>
